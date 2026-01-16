@@ -1,21 +1,30 @@
 function Calculator() {
-    this.actions = ['+', '-', '*', '/', '^'];
+    this.actions = {
+        '+': this.add,
+        '-': this.subtract,
+        '*': this.multiply,
+        '/': this.divide,
+        '^': this.power
+    };
     this.history = [];
 };
 
 Calculator.prototype.isCorrectAction = function (action) {
-    return this.actions.includes(action);
+    return Object.keys(this.actions).includes(action);
 };
 
 Calculator.prototype.manageResult = function (result) {
-    this.history.push(result);
+    this.history.push(`${number1} ${action} ${number2} = ${result}`);
     return result
 };
 
 Calculator.prototype.isNumber = function (num1, num2) {
     if (isNaN(Number(num1)) || isNaN(Number(num2))) {
         throw new Error('Zły format danych do stosowanych operacji');
-    }
+    } else if (number1 === '' || number2 === '') {
+        number1 = 0;
+        number2 = 0;
+    };
 };
 
 Calculator.prototype.getHistoryAsString = function () {
@@ -28,7 +37,7 @@ Calculator.prototype.add = function (num1, num2) {
     this.manageResult(result);
 };
 
-Calculator.prototype.substract = function (num1, num2) {
+Calculator.prototype.subtract = function (num1, num2) {
     this.isNumber(num1, num2);
     const result = Number(num1) - Number(num2);
     this.manageResult(result);
@@ -54,10 +63,13 @@ Calculator.prototype.power = function (num1, num2) {
     this.isNumber(num1, num2);
     let result = 1;
 
-    for (let i = 0; i < num2; i++) {
-        result *= num1;
-    }
-
+    if (+num1 === 0) {
+        result = 0;
+    } else {
+        for (let i = 0; i < num2; i++) {
+            result *= num1;
+        };
+    };
     this.manageResult(result);
 };
 
@@ -70,30 +82,14 @@ do {
 
     action = prompt(promptContent);
     isCorrectAction = calc.isCorrectAction(action);
+    actionFunc = calc.actions[action]
+
     if (isCorrectAction) {
         number1 = prompt('Podaj liczbę nr 1');
         number2 = prompt('Podaj liczbę nr 2');
 
         try {
-            switch (action) {
-                case "+":
-                    calc.add(number1, number2);
-                    break
-                case "-":
-                    calc.substract(number1, number2);
-                    break
-                case "*":
-                    calc.multiply(number1, number2);
-                    break
-                case "/":
-                    calc.divide(number1, number2);
-                    break
-                case "^":
-                    calc.power(number1, number2);
-                    break
-                default:
-                    throw new Error('Operator nie istnieje!');
-            }
+            actionFunc.bind(calc)(number1, number2);
         } catch (error) {
             alert(error.message);
         }
